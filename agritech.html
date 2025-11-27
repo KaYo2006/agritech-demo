@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgriTwin OS – Demo Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #020617;
+      padding: 20px;
+      border-right: 1px solid #1f2937;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #a5b4fc;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    .menu {
+      list-style: none;
+    }
+
+    .menu-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-item small {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .menu-item.active,
+    .menu-item:hover {
+      background: #111827;
+    }
+
+    /* Main area */
+    .main {
+      flex: 1;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-block h1 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .title-block span {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      color: #9ca3af;
+    }
+
+    /* KPI cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid #1f2937;
+    }
+
+    .card h2 {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .card .value {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card .sub {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .chip {
+      display: inline-block;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+
+    .chip.good { background: #022c22; color: #6ee7b7; }
+    .chip.warn { background: #451a03; color: #fbbf24; }
+    .chip.bad  { background: #450a0a; color: #fecaca; }
+
+    /* Screens */
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .screen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .screen-header h2 {
+      font-size: 16px;
+    }
+
+    .screen-header span {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 12px;
+    }
+
+    .list {
+      font-size: 12px;
+    }
+
+    .list-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed #1f2937;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .map-placeholder {
+      height: 150px;
+      border-radius: 10px;
+      border: 1px dashed #374151;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #4f46e5;
+      color: white;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid #374151;
+      color: #e5e7eb;
+    }
+
+    @media (max-width: 800px) {
+      .app { flex-direction: column; }
+      .sidebar { width: 100%; display: flex; flex-direction: column; }
+      .split { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">AgriTwin OS</div>
+    <div class="tagline">
+      Digital twin for farms, nutrition, climate risk & govt schemes – in one screen.
+    </div>
+    <ul class="menu">
+      <li class="menu-item active" data-screen="overview">
+        Overview <small>Food security at a glance</small>
+      </li>
+      <li class="menu-item" data-screen="farm">
+        Farm Twin <small>Soil • Yield • Risk</small>
+      </li>
+      <li class="menu-item" data-screen="nutrition">
+        Nutrition &amp; PDS <small>Mid-day meals • NFSA</small>
+      </li>
+      <li class="menu-item" data-screen="climate">
+        Climate Risk <small>Drought • Flood • Heat</small>
+      </li>
+      <li class="menu-item" data-screen="schemes">
+        Schemes &amp; Impact <small>PMFBY • RKVY • More</small>
+      </li>
+      <li class="menu-item" data-screen="alerts">
+        Alerts &amp; Simulation <small>What-if engine</small>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <header>
+      <div class="title-block">
+        <h1>Demo District: Kisanpur (Population 9.3 Lakh)</h1>
+        <span>Live digital twin snapshot – data is sample for demonstration.</span>
+      </div>
+      <div class="pill-row">
+        <div class="pill">Today: Moderate drought risk</div>
+        <div class="pill">84% scheme coverage</div>
+        <div class="pill">Version: Demo 0.1</div>
+      </div>
+    </header>
+
+    <!-- OVERVIEW -->
+    <section id="screen-overview" class="screen active">
+      <div class="grid">
+        <div class="card">
+          <h2>Food Security Score</h2>
+          <div class="value">76 / 100</div>
+          <div class="sub">Weighted across farms, nutrition and climate risk.</div>
+          <span class="chip.warn">At risk in 30 days without action</span>
+        </div>
+        <div class="card">
+          <h2>Villages Monitored</h2>
+          <div class="value">142</div>
+          <div class="sub">Digital twin coverage of the entire block.</div>
+          <span class="chip.good">100% coverage</span>
+        </div>
+        <div class="card">
+          <h2>High-Risk Villages</h2>
+          <div class="value">18</div>
+          <div class="sub">Predicted shortage of cereals &amp; pulses.</div>
+          <span class="chip.bad">Action required</span>
+        </div>
+        <div class="card">
+          <h2>Leakage / Anomaly Flags</h2>
+          <div class="value">7</div>
+          <div class="sub">Unusual PDS or scheme behaviour detected.</div>
+          <span class="chip.warn">Under investigation</span>
+        </div>
+      </div>
+      <div class="split">
+        <div class="card">
+          <div class="screen-header">
+            <h2>Risk Map</h2>
+            <span>Red = food &amp; climate risk together</span>
+          </div>
+          <div class="map-placeholder">
+            Simple coloured map image can be placed here for real demo.
+          </div>
+          <div class="list">
+            <div class="list-row">
+              <span>Cluster A – Canal Belt</span>
+              <span class="badge">Stable</span>
+            </div>
+            <div class="list-row">
+              <span>Cluster B – Rain-fed West</span>
+              <span class="badge">High risk</span>
+            </div>
+            <div class="list-row">
+              <span>Cluster C – Hill Fringe</span>
+              <span class="badge">Medium risk</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="screen-header">
+            <h2>System Intelligence</h2>
+            <span>Generated automatically by the OS</span>
+          </div>
+          <ul class="list">
+            <li class="list-row">
+              <span>Maize yield expected to drop 22% in 3 weeks.</span>
+              <span class="badge">Farm Twin</span>
+            </li>
+            <li class="list-row">
+              <span>Mid-day meal cereal stock < 10 days in 23 schools.</span>
+              <span class="badge">Nutrition</span>
+            </li>
+            <li class="list-row">
+              <span>Drought probability > 60% for Block West.</span>
+              <span class="badge">Climate</span>
+            </li>
+            <li class="list-row">
+              <span>PMFBY enrolment missing for 412 small farmers.</span>
+              <span class="badge">Schemes</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FARM TWIN -->
+    <section id="screen-farm" class="screen">
+      <div class="screen-header">
+        <h2>Farm Digital Twin</h2>
+        <span>Soil, crops, yield and risk at plot level.</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h2>Average Soil Health Index</h2>
+          <div class="value">63</div>
+          <div class="sub">Low organic carbon in 34% of farms.</div>
+          <span class="chip.warn">Priority: soil regeneration</span>
+        </div>
+        <div class="card">
+          <h2>Predicted Yield Loss</h2>
+          <div class="value">-18%</div>
+          <div class="sub">Without intervention under current climate forecast.</div>
+          <span class="chip.bad">Trigger advisory + insurance</span>
+        </div>
+        <div class="card">
+          <h2>Crops at Risk</h2>
+          <div class="value">Paddy, Maize</div>
+          <div class="sub">Risk from moisture stress &amp; pest pressure.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="screen-header">
+          <h2>Sample Farm Twin Table</h2>
+          <button class="btn secondary">Export for Dept Use</button>
+        </div>
+        <div class="list">
+          <div class="list-row">
+            <span>#F-102 • 1.3 ha • Paddy</span>
+            <span>Soil: Medium • Risk: <span class="badge">Orange</span></span>
+          </div>
+          <div class="list-row">
+            <span>#F-221 • 0.7 ha • Maize</span>
+            <span>Soil: Low OC • Risk: <span class="badge">Red</span></span>
+          </div>
+          <div class="list-row">
+            <span>#F-347 • 2.1 ha • Pulses</span>
+            <span>Soil: Good • Risk: <span class="badge">Green</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NUTRITION & PDS -->
+    <section id="screen-nutrition" class="screen">
+      <div class="screen-header">
+        <h2>Nutrition &amp; PDS Twin</h2>
+        <span>Real-time view of food and nutrition programmes.</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h2>PDS Stock Coverage</h2>
+          <div class="value">24 days</div>
+          <div class="sub">Average across depots and FPS.</div>
+          <span class="chip.good">Within target</span>
+        </div>
+        <div class="card">
+          <h2>Mid-Day Meal Risk Schools</h2>
+          <div class="value">23 / 311</div>
+          <div class="sub">Likely cereal shortage next 10 days.</div>
+          <span class="chip.warn">Auto-alert sent</span>
+        </div>
+        <div class="card">
+          <h2>Leakage Suspected</h2>
+          <div class="value">3 FPS</div>
+          <div class="sub">Sales > allocation &amp; ghost cards.</div>
+          <span class="chip.bad">Audit recommended</span>
+        </div>
+      </div>
+      <div class="split">
+        <div class="card">
+          <h2>PDS &amp; MDM – Hotspot List</h2>
+          <div class="list">
+            <div class="list-row">
+              <span>Village B14 – Low PDS uptake, high malnutrition.</span>
+              <span class="badge">Red</span>
+            </div>
+            <div class="list-row">
+              <span>Cluster C03 – MDM rice stock < 5 days.</span>
+              <span class="badge">Orange</span>
+            </div>
+            <div class="list-row">
+              <span>Village A09 – Good stock, low utilisation.</span>
+              <span class="badge">Investigate</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Impact Snapshot</h2>
+          <p class="sub">
+            In the last 90 days, AgriTwin OS prevented an estimated
+            <strong>11,200 student-days</strong> of mid-day meal disruption
+            by pre-warning the education and food departments.
+          </p>
+          <button class="btn" style="margin-top:10px;">Download Impact Brief</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIMATE RISK -->
+    <section id="screen-climate" class="screen">
+      <div class="screen-header">
+        <h2>Climate Risk Twin</h2>
+        <span>Combining weather, soil moisture &amp; crop stage.</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h2>Drought Probability (Next 30 Days)</h2>
+          <div class="value">62%</div>
+          <div class="sub">Rain-fed west &amp; hill fringe most vulnerable.</div>
+          <span class="chip.warn">Preparedness level: Medium</span>
+        </div>
+        <div class="card">
+          <h2>Extreme Heat Days Forecast</h2>
+          <div class="value">7 days</div>
+          <div class="sub">Projected above 40°C impacting labour &amp; crops.</div>
+        </div>
+        <div class="card">
+          <h2>Insurance Trigger Suggestions</h2>
+          <div class="value">1,842</div>
+          <div class="sub">Farmers to be auto-notified for PMFBY cover.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Risk Timeline</h2>
+        <p class="sub">
+          Demo view: grey area = normal, orange = stress, red = high risk.
+          In product, this becomes an interactive chart linked to farm and
+          nutrition data.
+        </p>
+        <div class="map-placeholder" style="margin-top:8px;">
+          Placeholder for simple timeline / chart graphic.
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHEMES -->
+    <section id="screen-schemes" class="screen">
+      <div class="screen-header">
+        <h2>Government Schemes &amp; Impact</h2>
+        <span>Where money goes, and what changes on the ground.</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h2>PMFBY Coverage</h2>
+          <div class="value">71%</div>
+          <div class="sub">Of eligible farmers enrolled.</div>
+          <span class="chip.warn">Gap: small &amp; marginal farmers</span>
+        </div>
+        <div class="card">
+          <h2>Irrigation Scheme Reach</h2>
+          <div class="value">63%</div>
+          <div class="sub">Command area actually receiving water.</div>
+        </div>
+        <div class="card">
+          <h2>Digital Payments Share</h2>
+          <div class="value">92%</div>
+          <div class="sub">Schemes reaching bank accounts directly.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Scheme Intelligence</h2>
+        <div class="list">
+          <div class="list-row">
+            <span>Village B14 – zero PMFBY, repeated crop loss.</span>
+            <span class="badge">Priority enrolment</span>
+          </div>
+          <div class="list-row">
+            <span>Canal Minor-3 – funds used, but water not flowing.</span>
+            <span class="badge">Field audit</span>
+          </div>
+          <div class="list-row">
+            <span>Women-led SHGs – high repayment, low credit access.</span>
+            <span class="badge">Scale credit</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTS & SIMULATION -->
+    <section id="screen-alerts" class="screen">
+      <div class="screen-header">
+        <h2>Alerts &amp; What-If Simulation</h2>
+        <span>How the OS prevents a crisis before it happens.</span>
+      </div>
+      <div class="split">
+        <div class="card">
+          <h2>Active Alerts</h2>
+          <div class="list">
+            <div class="list-row">
+              <span>Drought scenario – West block, impact on maize &amp; PDS.</span>
+              <span class="badge">High</span>
+            </div>
+            <div class="list-row">
+              <span>Sudden PDS off-take spike at FPS-19.</span>
+              <span class="badge">Investigate</span>
+            </div>
+            <div class="list-row">
+              <span>10 schools without updated MDM stock data.</span>
+              <span class="badge">Follow-up</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>What-If Scenario (Demo)</h2>
+          <p class="sub">
+            Suppose rainfall drops by 30% in the next month.
+            AgriTwin simulates combined impact:
+          </p>
+          <ul class="list">
+            <li class="list-row">
+              <span>Farm yield falls by ~19%.</span>
+              <span class="badge">Farm Twin</span>
+            </li>
+            <li class="list-row">
+              <span>Food Security Score drops from 76 → 61.</span>
+              <span class="badge">District</span>
+            </li>
+            <li class="list-row">
+              <span>Mid-day meal cereal gap in 57 schools.</span>
+              <span class="badge">Nutrition</span>
+            </li>
+            <li class="list-row">
+              <span>PMFBY claims projected to rise by 2.3x.</span>
+              <span class="badge">Schemes</span>
+            </li>
+          </ul>
+          <button class="btn" style="margin-top:10px;">Show Recommended Actions</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const menuItems = document.querySelectorAll(".menu-item");
+  const screens = document.querySelectorAll(".screen");
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-screen");
+
+      menuItems.forEach(m => m.classList.remove("active"));
+      item.classList.add("active");
+
+      screens.forEach(s => {
+        if (s.id === "screen-" + target) {
+          s.classList.add("active");
+        } else {
+          s.classList.remove("active");
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
